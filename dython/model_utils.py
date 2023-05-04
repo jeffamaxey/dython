@@ -98,10 +98,7 @@ def _binary_metric_graph(
             y_t, y_p
         )  # x = recall, y = precision
     auc_score = auc(x_axis, y_axis)
-    if class_label is not None:
-        class_label = ": " + class_label
-    else:
-        class_label = ""
+    class_label = f": {class_label}" if class_label is not None else ""
     label = "{metric} curve{class_label} (AUC = {auc:{fmt}}".format(
         metric=metric.upper(), class_label=class_label, auc=auc_score, fmt=fmt
     )
@@ -259,25 +256,26 @@ def metric_graph(
         raise ValueError(f"Invalid metric {metric}")
     else:
         metric = metric.lower()
-    all_x_axis = list()
-    all_y_axis = list()
+    all_x_axis = []
+    all_y_axis = []
     y_true = convert(y_true, "array")
     y_pred = convert(y_pred, "array")
     if y_pred.shape != y_true.shape:
         raise ValueError("y_true and y_pred must have the same shape")
     if class_names is not None:
-        if not isinstance(class_names, str):
-            class_names = convert(class_names, "list")
-        else:
-            class_names = [class_names]
+        class_names = (
+            [class_names]
+            if isinstance(class_names, str)
+            else convert(class_names, "list")
+        )
     if ax is None:
         plt.figure(figsize=figsize)
         ax = plt.gca()
     if isinstance(colors, str):
         colors = [colors]
     colors = colors or _ROC_PLOT_COLORS
-    output_dict = dict()
-    pr_naives = list()
+    output_dict = {}
+    pr_naives = []
     if (
         len(y_pred.shape) == 1
         or y_pred.shape[1] == 1
@@ -472,9 +470,7 @@ def ks_abc(
         y_p = [x[1] for x in y_pred]
     else:
         raise ValueError(
-            "y_true and y_pred must originate from a binary classifier, but have {} columns".format(
-                y_pred.shape[1]
-            )
+            f"y_true and y_pred must originate from a binary classifier, but have {y_pred.shape[1]} columns"
         )
 
     thresholds, nr, pr, ks_statistic, max_distance_at, _ = binary_ks_curve(

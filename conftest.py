@@ -24,7 +24,7 @@ def iris_df():
 
     iris = datasets.load_iris()
 
-    target = ["C{}".format(i) for i in iris.target]
+    target = [f"C{i}" for i in iris.target]
 
     rng = np.random.default_rng(2207)
     extra = rng.choice(list("ABCDE"), size=len(target))
@@ -34,9 +34,7 @@ def iris_df():
     X = pd.DataFrame(data=iris.data, columns=iris.feature_names)
     y = pd.DataFrame(data=target, columns=["target"])
 
-    df = pd.concat([X, extra, y], axis=1)
-
-    return df
+    return pd.concat([X, extra, y], axis=1)
 
 
 @pytest.fixture(autouse=True)

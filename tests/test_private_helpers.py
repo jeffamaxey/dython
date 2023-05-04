@@ -89,4 +89,4 @@ def test_replace_nan_all_nan(x_y):
 
     x_, y_ = replace_nan_with_value(x, y, 1_000)
 
-    assert all([elem == 1_000 for elem in x_])
+    assert all(elem == 1_000 for elem in x_)

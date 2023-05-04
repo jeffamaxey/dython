@@ -80,7 +80,7 @@ def conditional_entropy(
     xy_counter = Counter(list(zip(x, y)))
     total_occurrences = sum(y_counter.values())
     entropy = 0.0
-    for xy in xy_counter.keys():
+    for xy in xy_counter:
         p_xy = xy_counter[xy] / total_occurrences
         p_y = y_counter[xy[1]] / total_occurrences
         entropy += p_xy * math.log(p_y / p_xy, log_base)
@@ -145,15 +145,14 @@ def cramers_v(
             v = np.sqrt(phi2corr / min((kcorr - 1), (rcorr - 1)))
     else:
         v = np.sqrt(phi2 / min(k - 1, r - 1))
-    if -_PRECISION <= v < 0.0 or 1.0 < v <= 1.0 + _PRECISION:
-        rounded_v = 0.0 if v < 0 else 1.0
-        warnings.warn(
-            f"Rounded V = {v} to {rounded_v}. This is probably due to floating point precision issues.",
-            RuntimeWarning,
-        )
-        return rounded_v
-    else:
+    if not -_PRECISION <= v < 0.0 and not 1.0 < v <= 1.0 + _PRECISION:
         return v
+    rounded_v = 0.0 if v < 0 else 1.0
+    warnings.warn(
+        f"Rounded V = {v} to {rounded_v}. This is probably due to floating point precision issues.",
+        RuntimeWarning,
+    )
+    return rounded_v
 
 
 def theils_u(
@@ -198,17 +197,15 @@ def theils_u(
     s_x = ss.entropy(p_x)
     if s_x == 0:
         return 1.0
-    else:
-        u = (s_x - s_xy) / s_x
-        if -_PRECISION <= u < 0.0 or 1.0 < u <= 1.0 + _PRECISION:
-            rounded_u = 0.0 if u < 0 else 1.0
-            warnings.warn(
-                f"Rounded U = {u} to {rounded_u}. This is probably due to floating point precision issues.",
-                RuntimeWarning,
-            )
-            return rounded_u
-        else:
-            return u
+    u = (s_x - s_xy) / s_x
+    if not -_PRECISION <= u < 0.0 and not 1.0 < u <= 1.0 + _PRECISION:
+        return u
+    rounded_u = 0.0 if u < 0 else 1.0
+    warnings.warn(
+        f"Rounded U = {u} to {rounded_u}. This is probably due to floating point precision issues.",
+        RuntimeWarning,
+    )
+    return rounded_u
 
 
 def correlation_ratio(
@@ -273,16 +270,14 @@ def correlation_ratio(
     denominator = np.sum(np.power(np.subtract(measurements, y_total_avg), 2))
     if numerator == 0:
         return 0.0
-    else:
-        eta = np.sqrt(numerator / denominator)
-        if 1.0 < eta <= 1.0 + _PRECISION:
-            warnings.warn(
-                f"Rounded eta = {eta} to 1. This is probably due to floating point precision issues.",
-                RuntimeWarning,
-            )
-            return 1.0
-        else:
-            return eta
+    eta = np.sqrt(numerator / denominator)
+    if not 1.0 < eta <= 1.0 + _PRECISION:
+        return eta
+    warnings.warn(
+        f"Rounded eta = {eta} to 1. This is probably due to floating point precision issues.",
+        RuntimeWarning,
+    )
+    return 1.0
 
 
 def identify_nominal_columns(dataset):
@@ -505,7 +500,7 @@ def associations(
     columns = dataset.columns
     auto_nominal = False
     if nominal_columns is None:
-        nominal_columns = list()
+        nominal_columns = []
     elif nominal_columns == "all":
         nominal_columns = columns
     elif nominal_columns == "auto":
@@ -514,25 +509,23 @@ def associations(
 
     # selecting rows and columns to be displayed
     if hide_columns is not None:
-        if isinstance(hide_columns, str) or isinstance(hide_columns, int):
+        if isinstance(hide_columns, (str, int)):
             hide_columns = [hide_columns]
         display_columns = [c for c in dataset.columns if c not in hide_columns]
     else:
         if display_columns == "all":
             display_columns = columns
-        elif isinstance(display_columns, str) or isinstance(
-            display_columns, int
-        ):
+        elif isinstance(display_columns, (str, int)):
             display_columns = [display_columns]
 
     if hide_rows is not None:
-        if isinstance(hide_rows, str) or isinstance(hide_rows, int):
+        if isinstance(hide_rows, (str, int)):
             hide_rows = [hide_rows]
         display_rows = [c for c in dataset.columns if c not in hide_rows]
     else:
         if display_rows == "all":
             display_rows = columns
-        elif isinstance(display_rows, str) or isinstance(display_rows, int):
+        elif isinstance(display_rows, (str, int)):
             display_columns = [display_rows]
 
     if (
@@ -755,7 +748,7 @@ def associations(
             )
         else:
             inf_nan_mask = np.ones_like(corr)
-        if len(single_value_columns_set) > 0:
+        if single_value_columns_set:
             sv = pd.DataFrame(
                 data=np.zeros_like(corr), columns=corr.columns, index=corr.index
             )
@@ -880,7 +873,7 @@ def numerical_encoding(
     elif nominal_columns == "auto":
         nominal_columns = identify_nominal_columns(dataset)
     converted_dataset = pd.DataFrame()
-    binary_columns_dict = dict()
+    binary_columns_dict = {}
     for col in dataset.columns:
         if col not in nominal_columns:
             converted_dataset.loc[:, col] = dataset[col]

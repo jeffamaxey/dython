@@ -36,7 +36,7 @@ def one_hot_encode(arr, classes=None):
            [0., 0., 0., 0., 0., 1.]])
     """
     arr = convert(arr, "array").astype(int)
-    if not len(arr.shape) == 1:
+    if len(arr.shape) != 1:
         raise ValueError(
             f"array must have only one dimension, but has shape: {arr.shape}"
         )
@@ -96,9 +96,7 @@ def split_hist(
     """
     plt.figure(figsize=figsize)
     split_vals = dataset[split_by].unique()
-    data_split = list()
-    for val in split_vals:
-        data_split.append(dataset[dataset[split_by] == val][values])
+    data_split = [dataset[dataset[split_by] == val][values] for val in split_vals]
     hist_kwargs["label"] = split_vals
     plt.hist(data_split, **hist_kwargs)
     if legend:

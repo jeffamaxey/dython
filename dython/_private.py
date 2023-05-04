@@ -26,13 +26,9 @@ def convert(data, to, copy=True):
         elif isinstance(data, np.ndarray):
             converted = pd.DataFrame(data)
     else:
-        raise ValueError("Unknown data conversion: {}".format(to))
+        raise ValueError(f"Unknown data conversion: {to}")
     if converted is None:
-        raise TypeError(
-            "cannot handle data conversion of type: {} to {}".format(
-                type(data), to
-            )
-        )
+        raise TypeError(f"cannot handle data conversion of type: {type(data)} to {to}")
     else:
         return converted
 

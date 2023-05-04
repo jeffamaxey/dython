@@ -87,7 +87,7 @@ def associations_iris_example():
 
     # Convert int classes to strings to allow associations method
     # to automatically recognize categorical columns
-    target = ["C{}".format(i) for i in iris.target]
+    target = [f"C{i}" for i in iris.target]
 
     # Prepare data
     X = pd.DataFrame(data=iris.data, columns=iris.feature_names)
